@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+*.deb
+*.log
+.env
+.env.*
+!.env.example
+passwd
+Xauthority
+initial-password.txt
+/.artifacts/
+/test-results/
+/runtime/
+/browser-profile/

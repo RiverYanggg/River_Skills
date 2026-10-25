@@ -1,0 +1,4 @@
+interface:
+  display_name: "macOS 连接 Linux 桌面"
+  short_description: "为 Linux 配置独立 XFCE/VNC 桌面，通过 SSH 使用 Mac 自带屏幕共享连接"
+  default_prompt: "使用 $macos-remote-desktop 为当前 Linux 服务器配置我的独立图形桌面，并提供 Mac 本地连接步骤。"
