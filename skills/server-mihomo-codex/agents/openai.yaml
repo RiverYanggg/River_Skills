@@ -1,0 +1,4 @@
+interface:
+  display_name: "服务器代理与 Codex 配置"
+  short_description: "通过 SSH 配置 Linux Mihomo 代理、后台服务、登录出口检测和 Codex 订阅登录"
+  default_prompt: "使用 $server-mihomo-codex 在我的 Linux 服务器配置 Mihomo 订阅代理、登录自动检测和 Codex，并验证网络与订阅登录状态。"
