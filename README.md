@@ -8,6 +8,7 @@ RiverYanggg 的可复用 Agent 技能库。每个技能说明用途、执行位�
 |---|---|---|---|---|
 | [macos-remote-desktop](skills/macos-remote-desktop/SKILL.md) | 为 Linux 建立独立 XFCE/TigerVNC 桌面，Mac 使用自带“屏幕共享”连接 | Linux 服务器；Mac 负责 SSH 隧道和查看桌面 | Mac 已能使用的 SSH 别名；目标用户默认当前用户；可选浏览器、代理、分辨率及持久运行需求 | [完整指南](docs/macos-remote-desktop/guide.md) · [验证记录](docs/macos-remote-desktop/validation.md) |
 | [server-mihomo-codex](skills/server-mihomo-codex/SKILL.md) | 配置 Linux Mihomo 订阅代理、后台服务、登录出口检测与 Codex 订阅登录链路 | Linux 服务器；可由本地 Agent 经 SSH 执行 | 可用 SSH 连接、私密订阅/配置；可选出口国家和登录方式 | [完整指南](docs/server-mihomo-codex/guide.md) · [验证记录](docs/server-mihomo-codex/validation.md) |
+| [vps-hy2-node](skills/vps-hy2-node/SKILL.md) | 在个人 VPS 部署 Hysteria 2，生成 Mihomo/Clash Meta 与 Karing YAML，并指导导入和实测 | Linux VPS；可由本地 Agent 经 SSH 执行 | VPS SSH 信息、客户端类型、域名（可选） | [部署参考](skills/vps-hy2-node/references/deployment.md) · [客户端说明](skills/vps-hy2-node/references/clients.md) · [验证记录](docs/vps-hy2-node/validation.md) |
 
 新增、重命名或删除技能时，同时维护本表和下方对应说明。Agent 的仓库维护规则见 [AGENTS.md](AGENTS.md)。
 
@@ -57,6 +58,27 @@ cp -R skills/macos-remote-desktop "${CODEX_HOME:-$HOME/.codex}/skills/"
 **验证：** 已通过 17 项自动检查，以及临时 VNC、完整 XFCE/Chrome 部署的实机集成测试；真实 Mac 连接仍需首次使用时确认。详见[验证范围与限制](docs/macos-remote-desktop/validation.md)。
 
 完整安装、连接、改密码、持久运行和卸载步骤见[使用指南](docs/macos-remote-desktop/guide.md)。
+
+## vps-hy2-node
+
+**用途：** 从 VPS 环境检查开始，按官方 Hysteria 2 流程配置 TLS、认证、systemd 开机自启，生成可导入 Mihomo/Clash Meta 和 Karing 的 YAML，并完成真实出口验证。适用于个人节点，不提交真实密码、证书私钥或订阅链接。
+
+**在哪里使用：** Agent 在 VPS 上运行，或在本地通过用户授权的 SSH 连接执行远端配置；客户端 YAML 和导入说明保存到用户指定的本地任务目录。
+
+**输入与默认值：** 提供已购买 VPS 的 SSH 地址、端口、用户、登录方式和客户端软件；可选域名、端口及保存目录。默认探测现有环境、保留 SSH 和其他服务；没有域名时评估 sslip.io 与 ACME。无需公开密码或私钥。
+
+```bash
+# 本地 Agent 所在机器，仓库根目录执行；目标已存在时先比较或备份
+cp -R skills/vps-hy2-node "${CODEX_HOME:-$HOME/.codex}/skills/"
+```
+
+**调用示例：**
+
+> 使用 `$vps-hy2-node`，通过我提供的 SSH 连接部署个人 Hysteria 2 节点，生成手机和电脑可用的 YAML，并验证出口 IP。
+
+**产物、权限与影响：** VPS 上为 Hysteria 程序、私密服务端配置、ACME 证书存储与 systemd 服务；本地为 `hy2.yaml` 和 `导入说明.txt`。依赖 SSH、适配架构的官方二进制、可用的 UDP 路径与 TLS 证书；安装系统服务/调整防火墙需要管理员权限。只新增必要 UDP 端口与证书签发所需 TCP 入口，修改已有配置前备份。无需浏览器或图形桌面。
+
+**实测限制：** 本案例的 VPS 在电信和联通网络可用，移动网络不可用；这是该 VPS/IP 的运营商线路结果，不应当作所有服务商的普遍结论。完整流程见 [部署参考](skills/vps-hy2-node/references/deployment.md)、[客户端说明](skills/vps-hy2-node/references/clients.md) 和 [验证记录](docs/vps-hy2-node/validation.md)。
 
 ## server-mihomo-codex
 
