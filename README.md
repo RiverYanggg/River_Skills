@@ -9,6 +9,7 @@ RiverYanggg 的可复用 Agent 技能库。每个技能说明用途、执行位�
 | [macos-remote-desktop](skills/macos-remote-desktop/SKILL.md) | 为 Linux 建立独立 XFCE/TigerVNC 桌面，Mac 使用自带“屏幕共享”连接 | Linux 服务器；Mac 负责 SSH 隧道和查看桌面 | Mac 已能使用的 SSH 别名；目标用户默认当前用户；可选浏览器、代理、分辨率及持久运行需求 | [完整指南](docs/macos-remote-desktop/guide.md) · [验证记录](docs/macos-remote-desktop/validation.md) |
 | [server-mihomo-codex](skills/server-mihomo-codex/SKILL.md) | 配置 Linux Mihomo 订阅代理、后台服务、登录出口检测与 Codex 订阅登录链路 | Linux 服务器；可由本地 Agent 经 SSH 执行 | 可用 SSH 连接、私密订阅/配置；可选出口国家和登录方式 | [完整指南](docs/server-mihomo-codex/guide.md) · [验证记录](docs/server-mihomo-codex/validation.md) |
 | [vps-hy2-node](skills/vps-hy2-node/SKILL.md) | 在个人 VPS 部署 Hysteria 2，生成 Mihomo/Clash Meta 与 Karing YAML，并指导导入和实测 | Linux VPS；可由本地 Agent 经 SSH 执行 | VPS SSH 信息、客户端类型、域名（可选） | [部署参考](skills/vps-hy2-node/references/deployment.md) · [客户端说明](skills/vps-hy2-node/references/clients.md) · [验证记录](docs/vps-hy2-node/validation.md) |
+| [mac-remote-control](skills/mac-remote-control/SKILL.md) | 让服务器上的 Agent 通过 Mac 发起的反向 SSH 隧道，读写和操作本地 Mac 文件与命令 | 服务器（Agent 主要工作位置）；Mac 负责启动隧道和授权公钥 | Mac 用户名；服务器 SSH 别名；Mac 上项目路径；隧道端口（默认 2222） | [设置步骤](skills/mac-remote-control/references/setup.md) · [验证记录](docs/mac-remote-control/validation.md) |
 
 新增、重命名或删除技能时，同时维护本表和下方对应说明。Agent 的仓库维护规则见 [AGENTS.md](AGENTS.md)。
 
@@ -102,6 +103,32 @@ cp -R skills/server-mihomo-codex "${CODEX_HOME:-$HOME/.codex}/skills/"
 **产物与影响：** 用户目录内的 Mihomo/Codex 程序、私有订阅和代理环境配置、systemd 用户服务，以及备份后的 `.bashrc` source 行。默认仅回环监听、关闭 TUN；显式修改前保留已有配置。复用依赖时通常无须 sudo，系统缺失依赖或要求系统服务时需相应权限。用户服务 enable 不保证无人登录的开机运行。
 
 **依赖、实测和限制：** Bash、curl、适配架构的 Mihomo、可用节点；后台服务优先使用 systemd 用户管理器，转换 YAML 按需使用解析器。2026-10-26 会话在 Rocky Linux 8.10 x86_64 实测安装、美国出口、两个 OpenAI 接口 HTTP 200 和登录自动提示；账户授权由用户自行完成，未验证真实模型请求和跨重启持久性。新代理检查脚本另有隔离模拟测试。完整流程见[使用指南](docs/server-mihomo-codex/guide.md)，证据和范围见[验证记录](docs/server-mihomo-codex/validation.md)。
+
+## mac-remote-control
+
+**用途：** 让服务器上的 Agent（Claude Code、Codex 等）操作用户的本地 Mac：在服务器上修改 Mac 项目、执行 Mac 命令。通过 Mac 发起的 SSH 反向隧道连接，服务器不需要能直接访问 Mac。与 `macos-remote-desktop` 的区别：本技能不提供图形桌面，只做命令与文件操作。
+
+**在哪里使用：** 主要在 Linux 服务器上由 Agent 调用；Mac 终端只负责启动隧道（`ssh -R 2222:localhost:22 <服务器别名>`）和把服务器公钥加入 `~/.ssh/authorized_keys`。
+
+**人类需要提供：**
+
+- Mac 用户名（Mac 终端执行 `whoami`）。
+- Mac 能登录服务器的 SSH 别名，用于启动反向隧道。
+- Mac 上项目的绝对路径（需要挂载或修改项目时）。
+- 隧道端口，默认 `2222`；同一服务器有多台 Mac 时换用不同端口。
+
+**调用示例：**
+
+> 使用 $mac-remote-control 检查服务器到我 Mac 的反向隧道，并在 Mac 上执行我指定的操作。
+> 我的 Mac 用户名是 `<mac-user>`，服务器别名是 `<server-alias>`，项目路径是 `/Users/<mac-user>/<项目>`。
+
+**部署结果：** 服务器上的 `mac-tunnel` SSH 别名与专用密钥 `~/.ssh/id_ed25519_mac`，以及可选的 sshfs 挂载点。
+
+**依赖与限制：** 需要 Mac 开启远程登录、隧道窗口保持运行；sshfs 挂载需要服务器上安装 sshfs（需要 sudo 密码，由用户自行安装）。Mac 上的操作以用户身份执行，权限很大，删除、sudo、覆盖文件等操作需先确认。仅在 macOS arm64 上实测，sshfs 挂载尚未实测。
+
+**验证：** 仓库内 5 项静态与离线检查；服务器端实测隧道监听、免密登录、Mac 文件读写，以及检查脚本的通过与失败路径。详见[验证记录](docs/mac-remote-control/validation.md)。
+
+完整设置步骤、sshfs 挂载、常见错误和安全边界见[设置步骤](skills/mac-remote-control/references/setup.md)。
 
 ## 仓库结构
 
